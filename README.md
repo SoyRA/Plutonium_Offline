@@ -15,7 +15,7 @@ Probado su funcionamiento en Windows 10 (Versión 22H2) y Windows 11 (Versión 2
 4. Dale doble click para iniciarlo y seguí las instrucciones en pantalla.
 
 ### Variables personalizables
-https://github.com/SoyRA/Plutonium_Offline/blob/0000000000000000000000000000000000000000/Plutonium_Offline.bat#L21-L42
+https://github.com/SoyRA/Plutonium_Offline/blob/e3da5930e3390bbfad163061636ef3af5c0f189c/Plutonium_Offline.bat#L21-L42
 
 ## Agradecimientos
 - [SS64](https://ss64.com/nt/) - Por toda la documentación y recursos, hizo más fácil todo.
