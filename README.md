@@ -44,7 +44,7 @@ https://github.com/SoyRA/Plutonium_Offline/blob/e3da5930e3390bbfad163061636ef3af
 - [X] Validación del nombre del jugador
 - [X] Verificar rutas con caracteres especiales
 - [X] Determinar si Plutonium y/o el juego están en OneDrive
-- [ ] Agregar easter eggs
+- [X] Agregar easter eggs
 
 ## Aviso
 1. La idea original del script era mejorar y unificar lo que [ya había hecho hace años](https://github.com/SoyRA/PlutoT6/blob/master/PlutoT6/PU.bat), pero con algo más de comprobaciones. Fue muy divertido simular funciones y variables locales en Batch :v y limitarme a intentar no usar software de terceros (por eso utilizo el Plutonium Updater oficial y no una alternativa con soporte CLI).

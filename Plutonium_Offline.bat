@@ -44,6 +44,9 @@ SET CHECK_FOR_UPDATES=1
 :: Activar (1) o Desactivar (0) la validación de las rutas
 SET VALIDATE_PATHS=1
 
+:: Activar (1) o Desactivar (0) los easter eggs
+SET EASTER_EGGS=1
+
 :: ============================================================================
 :: @section      Variables internas
 :: @description  Variables que el usuario no debe modificar.
@@ -63,6 +66,7 @@ CALL :get_plutonium_bootstrapper_path
 CALL :check_updates
 CALL :get_current_game
 CALL :check_player_name
+CALL :easter_egg
 CALL :show_menu
 EXIT /B
 
@@ -620,6 +624,68 @@ EXIT /B
             SET %~2=%_LENGTH%
         )
     )
+    GOTO :EOF
+
+:: ============================================================================
+:: @subroutine   easter_egg
+:: @description  Huevos de pascua para romper los huevos. :v
+:: ============================================================================
+
+:easter_egg
+    IF %EASTER_EGGS% NEQ 1 (
+        GOTO :EOF
+    )
+
+    IF NOT %RANDOM% LEQ 225 (
+        GOTO :EOF
+    )
+
+    SETLOCAL
+    CLS
+    COLOR 03
+    SET /A _EGG_OPTION=(%RANDOM% %% 5) + 1
+
+    :: En honor a JoseX
+    IF %_EGG_OPTION% EQU 1 (
+        START "" /I /MIN /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "if (-not ((Get-Date).Month -eq 3 -and (Get-Date).Day -eq 31)) { Exit 1 }"
+        IF %ERRORLEVEL% EQU 0 (
+            SET PLAYER_NAME=Pibe Sex
+        )
+    )
+
+    :: En honor a M4RCK5
+    IF %_EGG_OPTION% EQU 2 (
+        ECHO "Mi script es aprueba de idiotas, no como el tuyo. uwu"
+        ECHO - M4RCK5, 69 años. Su script no realiza comprobaciones pese a decir que es aprueba de idiotas.
+        TIMEOUT /T 5 /NOBREAK > NUL
+    )
+
+    :: CMD / PS Spam
+    IF %_EGG_OPTION% EQU 3 (
+        FOR /L %%G IN (1, 1, 4) DO (
+            START "" /I CMD.exe /C "TIMEOUT /T 1 /NOBREAK > NUL"
+            START "" /I PowerShell.exe -NoLogo -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 1"
+        )
+    )
+
+    :: RAServer Fake Virus
+    IF %_EGG_OPTION% EQU 4 (
+        IF EXIST "%WINDIR%\System32\raserver.exe" (
+            ECHO [RAServer] Inicializando conexión segura...
+            TIMEOUT /T 1 /NOBREAK > NUL
+            ECHO [RAServer] Transfiriendo documentos privados...
+            TIMEOUT /T 3 /NOBREAK > NUL
+            ECHO [RAServer] Completado.
+            TIMEOUT /T 1 /NOBREAK > NUL
+        )
+    )
+
+    :: Rickroll
+    IF %_EGG_OPTION% EQU 5 (
+        START "" "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    )
+
+    ENDLOCAL
     GOTO :EOF
 
 :: ============================================================================
