@@ -42,8 +42,8 @@ https://github.com/SoyRA/Plutonium_Offline/blob/e3da5930e3390bbfad163061636ef3af
 - [X] Descarga y ejecución de `plutonium.exe` a elección
 - [X] Comprobar actualizaciones
 - [X] Validación del nombre del jugador
-- [ ] Verificar rutas con caracteres especiales
-- [ ] Determinar si Plutonium y/o el juego están en OneDrive
+- [X] Verificar rutas con caracteres especiales
+- [X] Determinar si Plutonium y/o el juego están en OneDrive
 - [ ] Agregar easter eggs
 
 ## Aviso

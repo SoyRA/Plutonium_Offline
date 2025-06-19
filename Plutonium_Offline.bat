@@ -41,6 +41,9 @@ SET PORTABLE_MODE=1
 :: Activar (1) o Desactivar (0) la comprobación de actualizaciones de Plutonium
 SET CHECK_FOR_UPDATES=1
 
+:: Activar (1) o Desactivar (0) la validación de las rutas
+SET VALIDATE_PATHS=1
+
 :: ============================================================================
 :: @section      Variables internas
 :: @description  Variables que el usuario no debe modificar.
@@ -54,6 +57,7 @@ SET PLUTONIUM_BOOTSTRAPPER_EXE=plutonium-bootstrapper-win32.exe
 :: @description  Llama a subrutinas principales en orden lógico.
 :: ============================================================================
 
+CALL :pre_check_path
 CALL :get_plutonium_updater_path
 CALL :get_plutonium_bootstrapper_path
 CALL :check_updates
@@ -76,6 +80,7 @@ EXIT /B
 
     IF EXIST "%LOCALAPPDATA%\Plutonium\%PLUTONIUM_UPDATER_EXE%" (
         SET PLUTONIUM_UPDATER_PATH=%LOCALAPPDATA%\Plutonium
+        CALL :check_path "%LOCALAPPDATA%\Plutonium"
         GOTO :EOF
     )
 
@@ -109,6 +114,7 @@ EXIT /B
     IF EXIST "%LOCALAPPDATA%\Plutonium\bin\%PLUTONIUM_BOOTSTRAPPER_EXE%" (
         SET PLUTONIUM_PATH=%LOCALAPPDATA%\Plutonium
         SET PLUTONIUM_BOOTSTRAPPER_PATH=%LOCALAPPDATA%\Plutonium\bin
+        CALL :check_path "%LOCALAPPDATA%\Plutonium"
         GOTO :EOF
     )
 
@@ -147,6 +153,7 @@ EXIT /B
             SET PLUTONIUM_PATH=%CD%\Plutonium
         ) ELSE (
             SET PLUTONIUM_PATH=%LOCALAPPDATA%\Plutonium
+            CALL :check_path "%LOCALAPPDATA%\Plutonium"
         )
     )
 
@@ -155,6 +162,7 @@ EXIT /B
             SET PLUTONIUM_UPDATER_PATH=%CD%
         ) ELSE (
             SET PLUTONIUM_UPDATER_PATH=%LOCALAPPDATA%\Plutonium
+            CALL :check_path "%LOCALAPPDATA%\Plutonium"
         )
     )
 
@@ -351,18 +359,22 @@ EXIT /B
     IF EXIST "%T4_GAME_DIR%\%_T4_FILE%" (
         SET _DETECTED_GAME=T4
         SET _HAS_T4=1
+        CALL :check_path "%T4_GAME_DIR%"
     )
     IF EXIST "%T5_GAME_DIR%\%_T5_FILE%" (
         SET _DETECTED_GAME=T5
         SET _HAS_T5=1
+        CALL :check_path "%T5_GAME_DIR%"
     )
     IF EXIST "%IW5_GAME_DIR%\%_IW5_FILE%" (
         SET _DETECTED_GAME=IW5
         SET _HAS_IW5=1
+        CALL :check_path "%IW5_GAME_DIR%"
     )
     IF EXIST "%T6_GAME_DIR%\%_T6_FILE%" (
         SET _DETECTED_GAME=T6
         SET _HAS_T6=1
+        CALL :check_path "%T6_GAME_DIR%"
     )
 
     IF DEFINED _DETECTED_GAME (
@@ -385,6 +397,164 @@ EXIT /B
     ECHO Se detendrá la ejecución...
     PAUSE
     EXIT
+
+:: ============================================================================
+:: @subroutine   pre_check_path
+:: @description  Verifica si la ruta donde se ejecuta este script es válida.
+:: @returns      MAX_PATH
+:: ============================================================================
+
+:pre_check_path
+    IF %VALIDATE_PATHS% NEQ 1 (
+        GOTO :EOF
+    )
+
+    SETLOCAL
+    SET _BAD_PATH_LENGTH=0
+    SET _BAD_PATH_CHARS=0
+    SET _BAD_PATH_ONEDRIVE=0
+
+    :: Determino cuál puede ser el largo máximo de la ruta
+    :: Aunque los posibles son 260 y 32767, debo restarle 86 porque considero la ruta más larga que puede tener Plutonium / el Juego
+    SET _MAX_PATH=174
+    CALL REG QUERY HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD | FIND "0x1" > NUL 2>&1
+    IF %ERRORLEVEL% EQU 0 (
+        :: Pero hay un límite de 8191 para las líneas de CMD y pasarte de 260 parece que estás buscando problemas apropósito realmente xd
+        SET _MAX_PATH=1040
+    )
+
+    :: Determino el largo de la ruta
+    SET _PATH=%CD%
+    CALL :strlen _PATH _LENGTH
+    IF %_LENGTH% GTR %_MAX_PATH% (
+        SET _BAD_PATH_LENGTH=1
+    )
+
+    :: Determino si la ruta tiene algo más que alfanuméricos, guion bajo, barra invertida y espacios
+    :: Obviamente hay más caracteres válidos, pero todo depende de lo que aguante Plutonium y/o el Juego así que la hago simple
+    SET _PATH=%CD:~2%
+    START "" /I /MIN /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "if ('%_PATH%' -notmatch '^[\w\\ ]*$') { Exit 1 }"
+    IF %ERRORLEVEL% EQU 1 (
+        SET _BAD_PATH_CHARS=1
+    )
+
+    :: Determino si la ruta está en OneDrive
+    :: Podría verificarse más cosas para hacerlo más preciso pero bueno
+    SET _PATH=%CD%
+    CALL SET "_TEMP=%%_PATH:%ONEDRIVE%=%%"
+    IF NOT "%_TEMP%"=="%_PATH%" (
+        SET _BAD_PATH_ONEDRIVE=1
+    )
+
+    :: Si todo está bien nos vamos
+    IF %_BAD_PATH_LENGTH% EQU 0 (
+        IF %_BAD_PATH_CHARS% EQU 0 (
+            IF %_BAD_PATH_ONEDRIVE% EQU 0 (
+                ENDLOCAL & SET MAX_PATH=%_MAX_PATH%
+                GOTO :EOF
+            )
+        )
+    )
+
+    CLS
+    COLOR 06
+    ECHO Aviso: La ruta "%_PATH%" tiene los siguientes problemas:
+    IF %_BAD_PATH_LENGTH% EQU 1 (
+        ECHO - Es muy larga ^(%_LENGTH% de %_MAX_PATH% caracteres^).
+    )
+    IF %_BAD_PATH_CHARS% EQU 1 (
+        ECHO - Contiene algo más que alfanuméricos, guion bajo y espacios.
+    )
+    IF %_BAD_PATH_ONEDRIVE% EQU 1 (
+        ECHO - Está en OneDrive.
+    )
+    ECHO.
+    ECHO Todo esto podría causar problemas en la ejecución de este %~nx0, Plutonium y/o el Juego.
+    ECHO Te recomiendo mover todo a una ruta simple usando solo alfanuméricos y espacios, como "C:\Juegos\Nombre del Juego"
+    ECHO.
+    CHOICE /C SN /N /M "¿Querés continuar y arriesgarte, (S)í o (N)o? "
+
+    IF %ERRORLEVEL% EQU 2 (
+        EXIT
+    )
+
+    ENDLOCAL & SET MAX_PATH=%_MAX_PATH%
+    GOTO :EOF
+
+:: ============================================================================
+:: @subroutine   check_path
+:: @param        %1 Ruta a comprobar.
+:: @description  Verifica si la ruta especificada es válida.
+:: ============================================================================
+
+:check_path
+    IF %VALIDATE_PATHS% NEQ 1 (
+        GOTO :EOF
+    )
+
+    SETLOCAL
+
+    SET _BAD_PATH_LENGTH=0
+    SET _BAD_PATH_CHARS=0
+    SET _BAD_PATH_ONEDRIVE=0
+
+    :: Determino el largo de la ruta
+    SET _PATH=%~1
+    CALL :strlen _PATH _LENGTH
+    IF %_LENGTH% GTR %MAX_PATH% (
+        SET _BAD_PATH_LENGTH=1
+    )
+
+    :: Determino si la ruta tiene algo más que alfanuméricos, guion bajo, barra invertida y espacios
+    :: Obviamente hay más caracteres válidos, pero todo depende de lo que aguante Plutonium y/o el Juego así que la hago simple
+    SET _PATH=%~pn1
+    START "" /I /MIN /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "if ('%_PATH%' -notmatch '^[\w\\ ]*$') { Exit 1 }"
+    IF %ERRORLEVEL% EQU 1 (
+        SET _BAD_PATH_CHARS=1
+    )
+
+    :: Determino si la ruta está en OneDrive
+    :: Podría verificarse más cosas para hacerlo más preciso pero bueno
+    SET _PATH=%~1
+    CALL SET "_TEMP=%%_PATH:%ONEDRIVE%=%%"
+    IF NOT "%_TEMP%"=="%_PATH%" (
+        SET _BAD_PATH_ONEDRIVE=1
+    )
+
+    :: Si todo está bien nos vamos
+    IF %_BAD_PATH_LENGTH% EQU 0 (
+        IF %_BAD_PATH_CHARS% EQU 0 (
+            IF %_BAD_PATH_ONEDRIVE% EQU 0 (
+                ENDLOCAL
+                GOTO :EOF
+            )
+        )
+    )
+
+    CLS
+    COLOR 06
+    ECHO Aviso: La ruta "%_PATH%" tiene los siguientes problemas:
+    IF %_BAD_PATH_LENGTH% EQU 1 (
+        ECHO - Es muy larga ^(%_LENGTH% de %MAX_PATH% caracteres^).
+    )
+    IF %_BAD_PATH_CHARS% EQU 1 (
+        ECHO - Contiene algo más que alfanuméricos, guion bajo y espacios.
+    )
+    IF %_BAD_PATH_ONEDRIVE% EQU 1 (
+        ECHO - Está en OneDrive.
+    )
+    ECHO.
+    ECHO Todo esto podría causar problemas en la ejecución de este %~nx0, Plutonium y/o el Juego.
+    ECHO Te recomiendo mover todo a una ruta simple usando solo alfanuméricos y espacios, como "C:\Juegos\Nombre del Juego"
+    ECHO.
+    CHOICE /C SN /N /M "¿Querés continuar y arriesgarte, (S)í o (N)o? "
+
+    IF %ERRORLEVEL% EQU 2 (
+        EXIT
+    )
+
+    ENDLOCAL
+    GOTO :EOF
 
 :: ============================================================================
 :: @subroutine   check_player_name
