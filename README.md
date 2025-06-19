@@ -15,7 +15,7 @@ Probado su funcionamiento en Windows 10 (Versión 22H2) y Windows 11 (Versión 2
 4. Dale doble click para iniciarlo y seguí las instrucciones en pantalla.
 
 ### Variables personalizables
-https://github.com/SoyRA/Plutonium_Offline/blob/e3da5930e3390bbfad163061636ef3af5c0f189c/Plutonium_Offline.bat#L21-L42
+https://github.com/SoyRA/Plutonium_Offline/blob/a2089b33d9e163d3599b950c14fcf0a7fd3b1922/Plutonium_Offline.bat#L21-L48
 
 > Si querés usar códigos de color (`^0` a `^9`) en tu nombre dentro del juego o poner cualquier [carácter de escape](https://ss64.com/nt/syntax-esc.html), encerrá toda la variable entre "comillas".\
 > Por ejemplo: `SET "PLAYER_NAME=^1Test"`
