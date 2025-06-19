@@ -238,7 +238,7 @@ EXIT /B
     SET _LOCAL_REVISION=0
     SET _REMOTE_REVISION=0
 
-    START "Plutonium Local Revision" /D "%TEMP%" /I /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "(Get-Content -Raw '%_LOCAL_JSON%' | ConvertFrom-Json).revision | Out-File -FilePath 'Plutonium_Local_Revision.txt' -Encoding 'ASCII' -NoNewline"
+    START "Plutonium Local Revision" /D "%TEMP%" /I /MIN /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "(Get-Content -Raw '%_LOCAL_JSON%' | ConvertFrom-Json).revision | Out-File -FilePath 'Plutonium_Local_Revision.txt' -Encoding 'ASCII' -NoNewline"
 
     IF NOT EXIST "%TEMP%\Plutonium_Local_Revision.txt" (
         GOTO :EOF
@@ -248,7 +248,7 @@ EXIT /B
         SET _LOCAL_REVISION=%%G
     )
 
-    START "Plutonium Remote Revision" /D "%TEMP%" /I /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "(Invoke-RestMethod -Uri '%_REMOTE_JSON%').revision | Out-File -FilePath 'Plutonium_Remote_Revision.txt' -Encoding 'ASCII' -NoNewline"
+    START "Plutonium Remote Revision" /D "%TEMP%" /I /MIN /WAIT PowerShell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -Command "(Invoke-RestMethod -Uri '%_REMOTE_JSON%').revision | Out-File -FilePath 'Plutonium_Remote_Revision.txt' -Encoding 'ASCII' -NoNewline"
 
     IF NOT EXIST "%TEMP%\Plutonium_Remote_Revision.txt" (
         GOTO :EOF
