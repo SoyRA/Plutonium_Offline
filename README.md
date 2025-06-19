@@ -17,6 +17,11 @@ Probado su funcionamiento en Windows 10 (Versión 22H2) y Windows 11 (Versión 2
 ### Variables personalizables
 https://github.com/SoyRA/Plutonium_Offline/blob/e3da5930e3390bbfad163061636ef3af5c0f189c/Plutonium_Offline.bat#L21-L42
 
+> Si querés usar códigos de color (`^0` a `^9`) en tu nombre dentro del juego o poner cualquier [carácter de escape](https://ss64.com/nt/syntax-esc.html), encerrá toda la variable entre "comillas".\
+> Por ejemplo: `SET "PLAYER_NAME=^1Test"`
+>
+> Pero lo ideal es que uses caracteres alfanuméricos, así ni Batch ni Plutonium ni el Juego sufren. :v
+
 ## Agradecimientos
 - [SS64](https://ss64.com/nt/) - Por toda la documentación y recursos, hizo más fácil todo.
 - [JoseX](https://github.com/JoseX-cl) - Por probar el script como si tuviera 8 años.
@@ -36,7 +41,7 @@ https://github.com/SoyRA/Plutonium_Offline/blob/e3da5930e3390bbfad163061636ef3af
 - [X] Modo portable
 - [X] Descarga y ejecución de `plutonium.exe` a elección
 - [X] Comprobar actualizaciones
-- [ ] Validación del nombre del jugador
+- [X] Validación del nombre del jugador
 - [ ] Verificar rutas con caracteres especiales
 - [ ] Determinar si Plutonium y/o el juego están en OneDrive
 - [ ] Agregar easter eggs

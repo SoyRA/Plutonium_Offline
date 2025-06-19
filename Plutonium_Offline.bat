@@ -58,6 +58,7 @@ CALL :get_plutonium_updater_path
 CALL :get_plutonium_bootstrapper_path
 CALL :check_updates
 CALL :get_current_game
+CALL :check_player_name
 CALL :show_menu
 EXIT /B
 
@@ -384,6 +385,72 @@ EXIT /B
     ECHO Se detendrá la ejecución...
     PAUSE
     EXIT
+
+:: ============================================================================
+:: @subroutine   check_player_name
+:: @description  Verifica el largo del nombre sin contar los códigos de color.
+:: ============================================================================
+
+:check_player_name
+    SETLOCAL ENABLEDELAYEDEXPANSION
+
+    :: Eliminar los códigos de color
+    SET "_CLEAN_NAME=#!PLAYER_NAME!"
+
+    FOR %%G IN (0 1 2 3 4 5 6 7 8 9) DO (
+        SET "_CLEAN_NAME=!_CLEAN_NAME:^%%G=!"
+    )
+
+    :: Eliminar el primer carácter que es un # para evitar que esté vacío
+    :: Así no hay problemas en nombres vacíos o con un código de color sin más
+    SET "_CLEAN_NAME=!_CLEAN_NAME:~1!"
+
+    :: Obtener el largo del nombre
+    CALL :strlen _CLEAN_NAME _LENGTH
+
+    IF %_LENGTH% LSS 1 (
+        CLS
+        COLOR 06
+        ECHO Aviso: Tu nombre parece ser menor a 1 carácter, es posible que el juego te lo cambie a uno predeterminado.
+        ECHO.
+        PAUSE
+    )
+
+    IF %_LENGTH% GTR 15 (
+        CLS
+        COLOR 06
+        ECHO Aviso: Tu nombre parece ser mayor a 15 caracteres, es posible que el juego te lo recorte.
+        ECHO.
+        PAUSE
+    )
+
+    ENDLOCAL
+    GOTO :EOF
+
+:: ============================================================================
+:: @subroutine   strlen
+:: @param        %1 [in]  La cadena cuya longitud se desea calcular.
+:: @param        %2 [out] Variable donde se almacenará el resultado.
+:: @description  Devuelve la longitud de una cadena.
+:: @author       Dave Benham <https://ss64.com/nt/syntax-strlen.html>
+:: ============================================================================
+
+:strlen
+    SETLOCAL ENABLEDELAYEDEXPANSION
+    SET "_STRING=#!%~1!"
+    SET _LENGTH=0
+    FOR %%G IN (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) DO (
+        IF "!_STRING:~%%G,1!" NEQ "" (
+            SET /A _LENGTH+=%%G
+            SET "_STRING=!_STRING:~%%G!"
+        )
+    )
+    ENDLOCAL & (
+        IF "%~2" NEQ "" (
+            SET %~2=%_LENGTH%
+        )
+    )
+    GOTO :EOF
 
 :: ============================================================================
 :: @subroutine   show_menu
